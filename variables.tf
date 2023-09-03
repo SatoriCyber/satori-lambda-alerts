@@ -1,0 +1,11 @@
+variable "aws_region" {}
+variable "satori_prefix" {}
+variable "hours" {}
+variable "satori_account_id" {}
+variable "satori_serviceaccount_id" {}
+variable "satori_serviceaccount_key" {}
+variable "satori_api_url" {}
+variable "pagerduty_incident_url" {}
+variable "pagerduty_apikey" {}
+variable "pagerduty_service_id" {}
+variable "pagerduty_sentby" {}
