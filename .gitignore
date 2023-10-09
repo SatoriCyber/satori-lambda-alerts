@@ -1,9 +1,17 @@
+satori-pagerduty-lambda-python.zip
+.terraform
+src/client_test.py
+src/__pycache__/
+.DS_Store
+
 # Local .terraform directories
 **/.terraform/*
 
 # .tfstate files
 *.tfstate
 *.tfstate.*
+terraform.tfvars
+.terraform.lock.hcl
 
 # Crash log files
 crash.log

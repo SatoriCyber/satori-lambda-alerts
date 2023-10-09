@@ -8,37 +8,16 @@ terraform {
 }
 
 provider "aws" {
-    region = var.aws_region
+  region = var.aws_region
 
-    default_tags {
+  default_tags {
     tags = {
       Satori = "${var.satori_prefix}"
     }
-}
+  }
 
 }
 
-
-
-resource "aws_secretsmanager_secret" "satori_secret" {
-  name = "${var.satori_prefix}_secrets"
-}
-
-resource "aws_secretsmanager_secret_version" "satori_secretversion" {
-  secret_id     = aws_secretsmanager_secret.satori_secret.id
-  secret_string = <<EOF
-{
-"satori_account_id": "${var.satori_account_id}",
-"satori_serviceaccount_id": "${var.satori_serviceaccount_id}",
-"satori_serviceaccount_key": "${var.satori_serviceaccount_key}",
-"satori_api_url": "${var.satori_api_url}",
-"pagerduty_incident_url": "${var.pagerduty_incident_url}",
-"pagerduty_apikey": "${var.pagerduty_apikey}",
-"pagerduty_service_id": "${var.pagerduty_service_id}",
-"pagerduty_sentby": "${var.pagerduty_sentby}"
-}
-EOF
-}
 
 
 
@@ -50,7 +29,8 @@ data "archive_file" "zip_the_python_code" {
 
 resource "aws_lambda_function" "satori_terraform_lambda_pagerduty" {
   filename         = "${path.module}/satori-pagerduty-lambda-python.zip"
-  source_code_hash = data.archive_file.zip_the_python_code.output_base64sha256
+  source_code_hash = "${data.archive_file.zip_the_python_code.output_base64sha256}"
+
   function_name    = "${var.satori_prefix}_lambdafunction"
   role             = aws_iam_role.lambda_role.arn
   handler          = "satori_lambda.lambda_handler"

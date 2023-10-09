@@ -3,7 +3,7 @@ import requests
 
 def get_token(satori_serviceaccount_id, satori_serviceaccount_key, satori_apihost):
     
-    # Get a Bearer Token for all the rest of this example
+    # Get a Bearer Token for all the rest of these examples
     
     auth_headers = {'content-type': 'application/json','accept': 'application/json'}
     auth_url = "https://{}/api/authentication/token".format(satori_apihost)
@@ -20,4 +20,4 @@ def get_token(satori_serviceaccount_id, satori_serviceaccount_key, satori_apihos
         print("Bearer Token Failure: :", err)
         print("bearer token Exception TYPE:", type(err))
     else:
-        return satori_token
+        return {'Authorization': 'Bearer {}'.format(satori_token),}
