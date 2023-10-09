@@ -5,7 +5,48 @@ import time
 
 action_type = "ACTION_REQUEST_BLOCK" 
 
-def get_custom_tag_audits(headers, satori_api_url, satori_account_id, hours_ago):
+# all rest API queries to Satori will return 100 records
+# if you have more than this, it means you have a larger probem that
+# should probably be solved with HUMINT :) don't change this value :) 
+pageSize = "100"
+
+
+def get_large_record_query_audits(
+    headers, 
+    satori_api_url, 
+    satori_account_id, 
+    large_record_threshold, 
+    hours_ago):
+
+    print("getting large-record queries\n")
+
+    large_record_threshold += ":" 
+    
+    unix_endtime = int(time.time()) * 1000
+    unix_starttime = (int(time.time()) - (int(hours_ago) * 3600)) * 1000
+    
+    payload = {}
+    auditurl = "https://{}/api/data-flow/{}/query?from={}&to={}&recordsRangeFilter={}&pageSize={}".format(
+                                                                        satori_api_url,
+                                                                        satori_account_id,
+                                                                        unix_starttime,
+                                                                        unix_endtime,
+                                                                        large_record_threshold,
+                                                                        pageSize
+                                                                         )
+    try:
+        response = requests.get(auditurl, headers=headers, data=payload)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as err:
+        print("Retrieval of audit data failed: :", err)
+        print("audit retrieval Exception TYPE:", type(err))
+    else:
+        print(str(response.json()['count']) + " audit records found")
+        return response
+
+
+
+def get_blocked_query_audits(headers, satori_api_url, satori_account_id, hours_ago):
 
     # Function to retrieve Satori audit entries from the last N hours of type 'action_type'
     
@@ -16,12 +57,13 @@ def get_custom_tag_audits(headers, satori_api_url, satori_account_id, hours_ago)
     # only search for queries which were blocked in the last 1 hour
     
     payload = {}
-    auditurl = "https://{}/api/data-flow/{}/query?from={}&to={}&actionTypesFilter={}".format(
+    auditurl = "https://{}/api/data-flow/{}/query?from={}&to={}&actionTypesFilter={}&pageSize={}".format(
                                                                         satori_api_url,
                                                                         satori_account_id,
                                                                         unix_starttime,
                                                                         unix_endtime,
-                                                                        action_type
+                                                                        action_type,
+                                                                        pageSize
                                                                          )
     try:
         response = requests.get(auditurl, headers=headers, data=payload)
@@ -75,7 +117,7 @@ def get_access_rule_selfservice_groups(headers, satori_api_url, dataset_id):
     else:
         return response
     
-def get_idp_group_by_name(headers, satori_api_url, satori_account_id, group_name):
+def get_idp_group_by_name(headers, satori_account_id, satori_api_url, group_name):
   
     url = "https://{}/api/v1/groups?accountId={}&names={}".format(satori_api_url,satori_account_id,group_name)
 
@@ -91,7 +133,7 @@ def get_idp_group_by_name(headers, satori_api_url, satori_account_id, group_name
 
 def get_local_group_by_id(headers, satori_api_url, group_id):
  
-    url = "https://{}/api/v1/directory/group/{}".format(satori_apihost,group_id)
+    url = "https://{}/api/v1/directory/group/{}".format(satori_api_url,group_id)
     
     try:
         response = requests.get(url, headers=headers)
@@ -102,7 +144,7 @@ def get_local_group_by_id(headers, satori_api_url, group_id):
     else:
         return response
 
-def is_user_allowed(headers, satori_api_url, email, dataset_id):
+def is_user_allowed(headers, satori_account_id, satori_api_url, email, dataset_id):
 
     master_group_count = 0
     search_email = email
@@ -119,7 +161,8 @@ def is_user_allowed(headers, satori_api_url, email, dataset_id):
         if group['identity']['identityType'] == 'EVERYONE':
             master_group_count += 1
         if group['identity']['identityType'] == 'IDP_GROUP':
-            this_idp_group = get_idp_group_by_name(headers, satori_api_url, group['identity']['identity'])
+            this_idp_group = get_idp_group_by_name(headers, satori_account_id, satori_api_url, group['identity']['identity'])
+            print(this_idp_group)
             members = this_idp_group.json()['records'][0]['members']
             for item in members:
                 if item['email'] == search_email:
@@ -138,7 +181,7 @@ def is_user_allowed(headers, satori_api_url, email, dataset_id):
         if group['identity']['identityType'] == 'EVERYONE':
             master_group_count += 1
         if group['identity']['identityType'] == 'IDP_GROUP':
-            this_idp_group = get_idp_group_by_name(headers, satori_api_url, group['identity']['identity'])
+            this_idp_group = get_idp_group_by_name(headers, satori_account_id, satori_api_url, group['identity']['identity'])
             members = this_idp_group.json()['records'][0]['members']
             for item in members:
                 if item['email'] == search_email:

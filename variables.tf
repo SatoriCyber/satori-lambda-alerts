@@ -1,6 +1,8 @@
 variable "aws_region" {}
 variable "satori_prefix" {}
+variable "reporting_type" {}
 variable "hours" {}
+variable "large_record_threshold" {}
 variable "satori_account_id" {}
 variable "satori_serviceaccount_id" {}
 variable "satori_serviceaccount_key" {}
@@ -9,3 +11,7 @@ variable "pagerduty_incident_url" {}
 variable "pagerduty_apikey" {}
 variable "pagerduty_service_id" {}
 variable "pagerduty_sentby" {}
+variable "slack_webhook" {}
+variable "dd_application_key" {}
+variable "dd_api_key" {}
+variable "datadog_url" {}

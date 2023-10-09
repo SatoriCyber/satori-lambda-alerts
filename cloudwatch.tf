@@ -11,8 +11,10 @@ resource "aws_cloudwatch_event_target" "satori-lambda-pagerduty-eventtarget" {
   input     = <<JSON
     {
       "secret_name": "${var.satori_prefix}_secrets",
-      "region": "${var.aws_region}",
-      "hours": "${var.hours}"
+      "aws_region": "${var.aws_region}",
+      "reporting_type": "${var.reporting_type}",
+      "hours": "${var.hours}",
+      "large_record_threshold": "${var.large_record_threshold}"
     }
     JSON
 }
